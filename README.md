@@ -22,7 +22,18 @@ Instead of relying on bloated 3D libraries, TensorMesh extracts the raw geometri
 ## Environment Initialization
 
 While TensorMesh Engine is strictly zero-dependency, initializing an isolated virtual environment is recommended for future architectural scaling and localized testing.
+Initialize virtual environment:
 
+
+python -m venv venv
+source venv/bin/activate
+(On Windows use: venv\Scripts\activate)
+
+3. Execute the core serializer:
+
+
+
+python api/json_serializer.py
 
 <div align="center">
 <a href="https://ko-fi.com/manikse">
