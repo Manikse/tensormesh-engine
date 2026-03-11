@@ -1,0 +1,12 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test artifacts
+*.stl
+mesh_matrix.json
+
+# Environment
+.env
+venv/
