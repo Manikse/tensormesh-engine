@@ -36,7 +36,8 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 python api/json_serializer.py
 
 
-## Author
+
+Author
 manikse
 
 Student at Slovak University of Technology (STU), Bratislava
@@ -49,6 +50,7 @@ Specializing in Automation and Informatization of Processes
 </a>
 
 <em>If TensorMesh bridged your engineering and web data, consider supporting the developer.</em>
+
 </p>
 
 <p align="center">
