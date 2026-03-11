@@ -25,7 +25,7 @@ While TensorMesh Engine is strictly zero-dependency, initializing an isolated vi
 
 ```bash
 # Clone the repository
-git clone [https://github.com/Manikse/tensormesh-engine.git](https://github.com/Manikse/tensormesh-engine.git)
+git clone https://github.com/Manikse/tensormesh-engine.git
 cd tensormesh-engine
 
 # Initialize and activate virtual environment
@@ -34,25 +34,25 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Execute the core serializer
 python api/json_serializer.py
-
-
-
 Author
 manikse
 
 Student at Slovak University of Technology (STU), Bratislava
+
 Founder of VestaStack & Lume
+
 Specializing in Automation and Informatization of Processes
 
-<p align="center">
+<div align="center">
 <a href="https://ko-fi.com/manikse">
 <img src="https://storage.ko-fi.com/cdn/kofi3.png?v=3" alt="Support the developer at ko-fi.com" width="200">
 </a>
 
+
+
 <em>If TensorMesh bridged your engineering and web data, consider supporting the developer.</em>
 
-</p>
 
-<p align="center">
+
 Engineered by manikse
-</p>
+</div>
