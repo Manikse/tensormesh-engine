@@ -3,51 +3,41 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from core.binary_decoder import BinaryMeshDecoder
-from math.tensor_calculus import TensorCalculus
+from core.stream_engine import TensorStreamer
 
-class MeshSerializer:
-    """
-    Compresses spatial calculations into a standardized JSON payload.
-    Optimized for ingestion by Next.js and React-Three-Fiber environments.
-    """
+class MeshAPI:
     @staticmethod
-    def serialize_mesh(file_path: str, output_path: str):
-        decoder = BinaryMeshDecoder(file_path)
+    def process_and_serialize(file_path: str, output_path: str):
         try:
-            triangles = decoder.decode()
-        except Exception as e:
-            return {"status": "error", "message": str(e)}
-
-        volume = TensorCalculus.calculate_volume(triangles)
-        surface_area = TensorCalculus.calculate_surface_area(triangles)
-        triangle_count = len(triangles)
-
-        payload = {
-            "metadata": {
-                "source_file": file_path,
-                "node_count": triangle_count * 3,
-                "triangle_count": triangle_count
-            },
-            "structural_analysis": {
-                "volume_mm3": round(volume, 4),
-                "surface_area_mm2": round(surface_area, 4)
-            },
-            "status": "compiled"
-        }
-
-        with open(output_path, 'w') as json_file:
-            json.dump(payload, json_file, indent=2)
+            print("[ENGINE] Initiating O(1) streaming matrix analysis...")
+            analysis_results = TensorStreamer.analyze_mesh(file_path)
             
-        print(f"[SERIALIZER] Output compiled and routed to {output_path}")
-        return payload
+            payload = {
+                "metadata": {
+                    "source_file": file_path,
+                    "triangle_count": analysis_results["triangle_count"]
+                },
+                "structural_analysis": {
+                    "volume_mm3": analysis_results["volume_mm3"],
+                    "surface_area_mm2": analysis_results["surface_area_mm2"]
+                },
+                "architecture_specs": {
+                    "memory_complexity": "O(1)",
+                    "execution_passes": 1
+                },
+                "status": "compiled"
+            }
+
+            with open(output_path, 'w') as json_file:
+                json.dump(payload, json_file, indent=2)
+                
+            print(f"✅ Success. Payload serialized to {output_path}")
+            return payload
+            
+        except Exception as e:
+            print(f"❌ Execution Error: {str(e)}")
 
 if __name__ == "__main__":
-    # Test execution
     test_file = "sample_mesh.stl"
     output_file = "mesh_matrix.json"
-    
-    if not os.path.exists(test_file):
-        print(f"Bypassing execution: Required binary input '{test_file}' not detected.")
-    else:
-        MeshSerializer.serialize_mesh(test_file, output_file)
+    MeshAPI.process_and_serialize(test_file, output_file)
