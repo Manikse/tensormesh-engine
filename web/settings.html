@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Vesta Settings</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-glow" id="glow"></div>
+
+    <div id="modal-account-actions" class="overlay">
+        <div class="modal-card" style="text-align: center;">
+            <div id="account-info-modal" style="margin-bottom: 20px;">
+                </div>
+            
+            <button class="btn-main btn-juicy" onclick="loginWithGoogle()" style="background: rgba(255,255,255,0.1); margin-bottom: 10px;">
+                <i class="fas fa-sync-alt"></i> Змінити акаунт
+            </button>
+
+            <button class="btn-main btn-juicy" onclick="handleLogout()" style="background: rgba(255, 59, 48, 0.2); color: #FF3B30; border: 1px solid rgba(255, 59, 48, 0.3);">
+                <i class="fas fa-sign-out-alt"></i> Розсинхронізуватись (Вийти)
+            </button>
+
+            <button class="btn-main btn-juicy" style="background: transparent; margin-top: 10px; opacity: 0.5" onclick="closeAllModals()">
+                Скасувати
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-service" class="overlay">
+        <div class="modal-card">
+            <h2 style="margin-bottom:20px">Сервіси</h2>
+            <button class="list-item btn-juicy" onclick="handleServiceSelect('Spotify')" style="opacity:0.6">
+                <span><i class="fab fa-spotify"></i> Spotify (Soon)</span>
+                <i class="fas fa-lock"></i>
+            </button>
+            <button class="list-item btn-juicy" onclick="handleServiceSelect('YouTube')">
+                <span><i class="fab fa-youtube" style="color:#FF0000"></i> YT Music</span>
+                <i class="fas fa-sync"></i>
+            </button>
+            <button class="btn-main btn-juicy" style="background:rgba(255,255,255,0.1); margin-top:15px" onclick="closeAllModals()">
+                Скасувати
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-connect-yt" class="overlay">
+        <div class="modal-card" style="text-align: center;">
+            <i class="fab fa-youtube" style="font-size: 50px; color: #FF0000; margin-bottom: 20px;"></i>
+            <h3>YouTube Music</h3>
+            <p style="font-size: 14px; opacity: 0.7; margin-bottom: 25px;">
+                Підключи свій акаунт, щоб синхронізувати плейлисти та ділитися ними з друзями.
+            </p>
+            
+            <button class="btn-main btn-juicy" onclick="loginWithGoogle()" 
+                style="background: white; color: black; font-weight: 700; display: flex; align-items:center; justify-content:center; gap:10px;">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20">
+                Увійти через Google
+            </button>
+            
+            <button class="btn-main btn-juicy" style="background: rgba(255,255,255,0.05); margin-top: 10px;" onclick="closeAllModals()">
+                Скасувати
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-visibility" class="overlay">
+        <div class="modal-card">
+            <h3>Дозволити плейлисти</h3>
+            <p style="color:#666; font-size:12px; margin-bottom:20px">Обери, що побачать твої друзі</p>
+            
+            <div id="visibility-list" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <p style="opacity: 0.3; text-align: center; font-size: 14px;">Завантаження...</p>
+            </div>
+
+            <button class="btn-main btn-juicy" style="margin-top: 20px;" onclick="closeAllModals()">Готово</button>
+        </div>
+    </div>
+
+    <section class="page">
+        <h1 style="font-weight:800; font-size:32px; margin-bottom:30px">Налаштування</h1>
+        
+        <p style="color:#555; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px">Музичні акаунти</p>
+        
+        <div class="list-item btn-juicy" onclick="openServiceSelector()">
+            <div style="display:flex; align-items:center; gap:12px">
+                <i class="fas fa-compact-disc" style="opacity:0.5"></i>
+                <span>Основна платформа</span>
+            </div>
+            <span id="sett-active-service" class="accent-text">YouTube</span>
+        </div>
+
+        <div class="list-item btn-juicy" id="btn-connect-yt" onclick="document.getElementById('modal-connect-yt').classList.add('active')">
+            <div style="display:flex; align-items:center; gap:12px">
+                <i class="fab fa-youtube" style="color: #FF0000"></i>
+                <span>YouTube Music</span>
+            </div>
+            <span class="accent-text" id="yt-status">Підключити</span>
+        </div>
+
+        <p style="color:#555; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin:30px 0 15px">Конфіденційність</p>
+        
+        <div class="list-item btn-juicy" onclick="openVisibilityModal()">
+            <span>Дозволити плейлисти</span>
+            <span class="accent-text" id="allowed-count">0</span>
+        </div>
+
+        <p style="color:#555; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin:30px 0 15px">Приватність</p>
+
+        <div class="list-item btn-juicy" onclick="cyclePrivacyMode()">
+            <div style="display:flex; align-items:center; gap:12px">
+                <i id="privacy-icon" class="fas fa-user-friends"></i>
+                <span>Хто бачить мій статус</span>
+            </div>
+            <span id="privacy-status" class="accent-text">Друзі</span>
+        </div>
+
+        <div class="list-item btn-juicy" onclick="shareProfileLink()">
+            <div style="display:flex; align-items:center; gap:12px">
+                <i class="fas fa-share-alt" style="color: var(--accent)"></i>
+                <span>Зв'язати акаунти з другом</span>
+            </div>
+        </div>
+
+        <p style="color:#555; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin:30px 0 15px">Додаток</p>
+        <div class="list-item">
+            <span>Мова</span>
+            <span style="opacity:0.5">UA</span>
+        </div>
+    </section>
+
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-btn"><i class="fas fa-compact-disc"></i></a>
+        <a href="friends.html" class="nav-btn"><i class="fas fa-users"></i></a>
+        <a href="playlists.html" class="nav-btn"><i class="fas fa-list-ul"></i></a>
+        <a href="settings.html" class="nav-btn active"><i class="fas fa-cog"></i></a>
+    </nav>
+
+    <script src="app.js"></script>
+</body>
+</html>

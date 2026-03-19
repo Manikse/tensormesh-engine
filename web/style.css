@@ -1,0 +1,291 @@
+:root {
+    --accent: #ff2a4d; --spotify: #1DB954; --ytmusic: #FF0000;
+    --bg: #050505; --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --smooth: cubic-bezier(0.4, 0, 0.2, 1); --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body { margin: 0; background: var(--bg); color: white; font-family: 'Outfit', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+.bg-glow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% -20%, var(--accent) 0%, transparent 70%); opacity: 0.3; filter: blur(100px); z-index: -1; transition: all 1s var(--smooth); }
+
+.page { padding: 25px; box-sizing: border-box; height: 100%; overflow-y: auto; padding-bottom: 120px; animation: fadeIn 0.4s var(--smooth) forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ПЛАТІВКА */
+.player-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75vh; }
+.vinyl-scene { position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; transition: 0.8s var(--smooth); margin: 0 auto; }
+.vinyl-wrapper { position: absolute; width: 95%; height: 95%; transition: transform 0.8s var(--smooth); z-index: 1; pointer-events: none; }
+.vinyl-disk { width: 100%; height: 100%; border-radius: 50%; background: repeating-radial-gradient(#111 0, #111 2px, #1a1a1a 3px); border: 6px solid #080808; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+.spinning { animation: rotate 5s linear infinite; }
+.album-art { position: absolute; width: 100%; height: 100%; border-radius: 25px; background: #222 center/cover; z-index: 2; box-shadow: 0 15px 45px rgba(0,0,0,0.5); transition: transform 0.8s var(--smooth); }
+.vinyl-scene.playing .album-art { transform: translateX(-70px) scale(0.95); }
+.vinyl-scene.playing .vinyl-wrapper { transform: translateX(80px); }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* КНОПКИ */
+.btn-juicy { transition: 0.3s var(--bounce); cursor: pointer; border: none; background: none; color: white; }
+.btn-juicy:active { transform: scale(0.92); }
+.btn-main { width: 100%; padding: 18px; border-radius: 20px; background: var(--accent); color: white; font-weight: 800; font-size: 16px; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 25px rgba(255, 42, 77, 0.3); }
+
+/* СПИСКИ */
+.list-item { background: var(--glass); border: 1px solid var(--glass-border); padding: 18px; border-radius: 22px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: white; width: 100%; box-sizing: border-box; }
+.avatar { width: 50px; height: 50px; border-radius: 18px; background: #222; position: relative; }
+
+/* НАВІГАЦІЯ */
+.nav-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; background: rgba(15,15,15,0.8); backdrop-filter: blur(25px); border-radius: 30px; display: flex; justify-content: space-around; padding: 12px 0; border: 1px solid var(--glass-border); z-index: 1000; }
+.nav-btn { color: #555; font-size: 20px; text-decoration: none; padding: 10px; transition: 0.3s; position: relative; }
+.nav-btn.active { color: var(--accent); transform: translateY(-5px); }
+.nav-btn.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+
+/* МОДАЛКИ ТА ШТОРКА */
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(30px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.5s; }
+.overlay.active { opacity: 1; pointer-events: all; }
+.modal-card { background: var(--glass); padding: 30px; border-radius: 40px; width: 85%; max-width: 400px; border: 1px solid var(--glass-border); text-align: center; }
+.sheet { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #0a0a0a; border-radius: 40px 40px 0 0; z-index: 3000; transition: 0.6s var(--smooth); padding: 30px; box-sizing: border-box; border-top: 1px solid var(--glass-border); }
+.sheet.active { bottom: 0; }
+.sheet-close-zone { width: 100%; height: 60px; margin-top: -30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.sheet-handle { width: 45px; height: 5px; background: #333; border-radius: 10px; }
+.avatar-mini {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid var(--accent);
+}
+
+.avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 3px solid var(--accent);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.friends-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+/* --- FIX: Sticky Footer для Модалки --- */
+.modal-card {
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh; /* Обмеження висоти, щоб влазило на екран */
+    padding: 0; /* Прибираємо старі відступи */
+    overflow: hidden;
+    position: relative;
+}
+
+.modal-header {
+    padding: 20px 20px 10px 20px;
+    background: #111;
+    z-index: 2;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.modal-body {
+    padding: 10px 20px;
+    overflow-y: auto; /* Скролиться тільки контент */
+    flex-grow: 1;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background: #111; /* Фон, щоб текст не просвічувався */
+    border-top: 1px solid rgba(255,255,255,0.05);
+    z-index: 2;
+    display: flex;
+    gap: 10px;
+}
+
+/* --- Новий мобільний стиль модалок --- */
+.modal-card {
+    background: #121212;
+    border-radius: 24px 24px 0 0 !important; /* Скруглення зверху як у iOS */
+    padding: 0 !important;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.modal-header {
+    padding: 24px 20px 16px;
+    text-align: center;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 100px; /* Відступ знизу для фіксованої кнопки */
+}
+
+/* Прилипаюча кнопка "Готово/Синхронізувати" */
+.modal-footer-fixed {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(to top, #121212 80%, transparent);
+    z-index: 10;
+}
+
+/* Картка плейлиста в списку */
+.playlist-import-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 16px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+}
+
+.playlist-import-item:active {
+    transform: scale(0.98);
+    background: rgba(255,255,255,0.08);
+}
+
+.custom-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%; /* Круглі чекбокси як у нових плеєрах */
+    border: 2px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+}
+
+input:checked + .custom-checkbox {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+}
+
+.playlist-cover-mini {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+:root {
+    --accent: #FF0000;
+    --text-main: #FFFFFF; /* Чистий білий */
+    --text-dim: rgba(255, 255, 255, 0.6);
+}
+
+body {
+    color: var(--text-main);
+    font-family: 'Outfit', sans-serif;
+    background-color: #000000;
+}
+
+h1, h2, h3, h4, span, b {
+    color: var(--text-main) !important;
+}
+
+.list-item span {
+    color: var(--text-main);
+}
+
+/* Адаптація для браузера (Desktop) */
+@media (min-width: 600px) {
+    body {
+        max-width: 450px;
+        margin: 0 auto;
+        border-left: 1px solid #222;
+        border-right: 1px solid #222;
+        height: 100vh;
+        position: relative;
+    }
+}
+
+.library-grid {
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 16px;
+    padding-bottom: 100px; /* щоб нава не перекривала */
+}
+
+.library-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.library-card:active {
+    transform: scale(0.96);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.library-cover {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+}
+
+.library-info {
+    padding: 12px;
+    text-align: left;
+}
+
+.library-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: #FFF;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.library-subtitle {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.vinyl-container {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 40px auto;
+}
+
+.vinyl-plate {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-radius: 50%;
+    background-image: radial-gradient(circle, #222 1px, transparent 1px), 
+                      repeating-radial-gradient(rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 2px, transparent 5px, transparent 10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: spin 20s linear infinite; /* Платівка крутиться! */
+}
+
+#vinyl-cover {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #111;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

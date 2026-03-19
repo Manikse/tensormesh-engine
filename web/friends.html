@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Vesta Friends</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-glow" id="glow"></div>
+
+    <section class="page">
+        <h1 style="font-weight:800; font-size:32px; margin-bottom:30px">Друзі</h1>
+        
+        <div id="friends-list" class="friends-container">
+            <p style="opacity: 0.3; text-align: center; margin-top: 50px;">Пошук меломанів...</p>
+        </div>
+    </section>
+
+    <div id="modal-friend-profile" class="overlay">
+        <div class="modal-card">
+            <div id="friend-profile-content">
+                </div>
+            <button class="btn-main btn-juicy" style="background:rgba(255,255,255,0.1); margin-top:20px" onclick="closeAllModals()">Закрити</button>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-btn"><i class="fas fa-compact-disc"></i></a>
+        <a href="friends.html" class="nav-btn active"><i class="fas fa-users"></i></a>
+        <a href="playlists.html" class="nav-btn"><i class="fas fa-list-ul"></i></a>
+        <a href="settings.html" class="nav-btn"><i class="fas fa-cog"></i></a>
+    </nav>
+
+    <script src="app.js"></script>
+<script>
+    // --- ЛОГІКА ДРУЗІВ ---
+
+    async function loadFriends() {
+        const userId = tg.initDataUnsafe.user?.id;
+        if (!userId) return;
+
+        // 1. Спочатку дізнаємось ID друзів із таблиці 'friends'
+        const { data: connections, error } = await supabaseClient
+            .from('friends')
+            .select('friend_id')
+            .eq('user_id', userId);
+
+        const container = document.getElementById('friends-list');
+
+        if (error || !connections || connections.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; margin-top:50px; opacity:0.5;">
+                    <i class="fas fa-user-plus" style="font-size:40px; margin-bottom:15px"></i>
+                    <p>У тебе ще немає друзів.</p>
+                    <button class="btn-main btn-juicy" style="width:auto; margin-top:10px" onclick="shareProfileLink()">Запросити</button>
+                </div>`;
+            return;
+        }
+
+        // Витягуємо список ID
+        const friendIds = connections.map(c => c.friend_id);
+
+        // 2. Тепер завантажуємо їхні профілі
+        const { data: profiles } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .in('id', friendIds); // Тільки ті, хто є у списку
+
+        container.innerHTML = profiles.map(p => `
+            <div class="list-item btn-juicy" onclick="openFriendProfile('${p.id}')">
+                <div style="display:flex; align-items:center; gap:12px">
+                    <div class="avatar-mini" style="background-image: url('${p.avatar_url || 'https://ui-avatars.com/api/?name=' + p.first_name}')"></div>
+                    <div>
+                        <b style="font-size: 16px;">${p.first_name || 'Користувач'}</b><br>
+                        <small class="accent-text" style="font-size: 12px;">
+                            ${p.current_track ? '🎧 ' + p.current_track : 'Не слухає музику'}
+                        </small>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right" style="opacity: 0.3;"></i>
+            </div>
+        `).join('');
+    }
+
+    async function openFriendProfile(friendId) {
+        tg.HapticFeedback.impactOccurred('light');
+
+        // Завантажуємо дані профілю та плейлисти
+        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', friendId).single();
+        const { data: playlists } = await supabaseClient.from('playlists').select('*').eq('user_id', friendId).eq('is_visible', true);
+
+        const content = document.getElementById('friend-profile-content');
+        
+        // Генеруємо HTML модалки
+        content.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div class="avatar-large" style="background-image: url('${profile.avatar_url || 'https://ui-avatars.com/api/?name=' + profile.first_name}'); margin: 0 auto 15px;"></div>
+                <h2 style="margin: 0;">${profile.full_name || profile.first_name}</h2>
+                <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
+                    ${profile.yt_headers ? '<i class="fab fa-youtube" style="color: #FF0000; font-size: 20px;"></i>' : ''}
+                    <i class="fab fa-spotify" style="color: #1DB954; font-size: 20px; opacity: 0.2;"></i>
+                </div>
+            </div>
+            
+            <p style="font-size: 11px; font-weight: 800; text-transform: uppercase; opacity: 0.5; margin-bottom: 10px;">Відкриті плейлисти</p>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+                ${playlists && playlists.length > 0 ? playlists.map(pl => `
+                    <div class="list-item" style="background: rgba(255,255,255,0.05); border: none;">
+                        <span>${pl.name}</span>
+                        <i class="fas fa-external-link-alt" style="font-size: 12px; opacity: 0.5;"></i>
+                    </div>
+                `).join('') : '<p style="opacity: 0.3; font-size: 13px;">Немає доступних плейлистів</p>'}
+            </div>
+
+            <button class="btn-main" onclick="deleteFriend('${friendId}')" 
+                style="background: rgba(255, 59, 48, 0.15); color: #FF3B30; margin-top: 10px; border: 1px solid rgba(255, 59, 48, 0.3);">
+                <i class="fas fa-user-times"></i> Видалити з друзів
+            </button>
+        `;
+        
+        document.getElementById('modal-friend-profile').classList.add('active');
+    }
+
+    async function deleteFriend(friendId) {
+        // Запитуємо підтвердження через нативний діалог Telegram
+        tg.showConfirm("Ти точно хочеш видалити цього користувача з друзів?", async (confirmed) => {
+            if (confirmed) {
+                const myId = tg.initDataUnsafe.user.id;
+
+                // 1. Видаляємо зв'язок "Я -> Друг"
+                await supabaseClient.from('friends').delete().match({ user_id: myId, friend_id: friendId });
+                
+                // 2. Видаляємо зв'язок "Друг -> Я" (щоб розрив був повним)
+                await supabaseClient.from('friends').delete().match({ user_id: friendId, friend_id: myId });
+
+                tg.showAlert("Користувача видалено.");
+                closeAllModals();
+                loadFriends(); // Оновлюємо список
+            }
+        });
+    }
+
+    // Запуск
+    window.addEventListener('DOMContentLoaded', loadFriends);
+    // Оновлення статусу кожні 15 секунд
+    setInterval(loadFriends, 15000);
+</script>
+</body>
+</html>
